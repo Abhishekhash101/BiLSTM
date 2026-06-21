@@ -8,6 +8,12 @@
 \usepackage{array}
 \usepackage{multirow}
 \usepackage{url}
+% Helper: placeholder figure box (no TikZ dependency)
+\newcommand{\figplaceholder}[2][\linewidth]{%
+  \noindent\fbox{\parbox{0.95#1}{%
+    \centering\vspace{1.5cm}\small\itshape #2\vspace{1.5cm}%
+  }}%
+}
 
 \usepackage{bm}
 \makeatletter
@@ -19,7 +25,9 @@
 \SetMathAlphabet{\mathbf}{bold}{T1}{times}{b}{n}
 \SetMathAlphabet{\mathtt}{bold}{OT1}{pcr}{b}{n}
 \SetSymbolFont{symbols}{bold}{OMS}{cmsy}{b}{n}
-\renewcommand\boldmath{\@nomath\boldmath\mathversion{bold}}}
+\renewcommand\boldmath{\@nomath\boldmath\mathversion{bold}}
+% Suppress font-shape warning: formata has no m/sl shape
+\DeclareFontShape{T1}{formata}{m}{sl}{<-> t1-formata-mediumitalic}{}}
 \makeatother
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -36,11 +44,10 @@
 
 \author{\uppercase{Ankit Subedi}\authorrefmark{1},
 \uppercase{Deepika J}\authorrefmark{1},
-\uppercase{Abhishek Kumar}\authorrefmark{2}, AND
+\uppercase{Abhishek Kumar}\authorrefmark{1}, AND
 \uppercase{Liz Alex}\authorrefmark{1}}
 
-\address[1]{Department of Information Security/CSE, School of Computer Science and Engineering, VIT University, Vellore, Tamil Nadu, India}
-\address[2]{Department of Information Technology, School of Computer Science Engineering and Information Systems, VIT University, Vellore, Tamil Nadu, India}
+\address[1]{Vellore Institute of Technology, Vellore 632014, Tamil Nadu, India}
 
 \corresp{Corresponding author: Deepika J (e-mail: deepika.j@vit.ac.in).}
 
@@ -49,9 +56,7 @@
 {Subedi \headeretal: A Residual Decomposition Framework with Attention-Based Sequence Modeling}
 
 \begin{abstract}
-Accurate short-term renewable-energy forecasting is important for smart-grid operation because dispatch, storage, and renewable-aware scheduling decisions are sensitive to forecast error during high-variability periods. This paper presents a residual decomposition framework in which a multivariate Linear Regression (LR) model captures the dominant deterministic structure of hourly renewable generation, while a lightweight attention-based Bidirectional Long Short-Term Memory (BiLSTM) model is trained only on the residual error left by the linear component. The implementation uses 8760 hourly records derived from GridPath India renewable-resource data for Tamil Nadu, including fixed-tilt solar, single-axis solar, rooftop solar, adjusted onshore wind, engineered load, and storage-state features. A 48-hour lookback window with 10 input channels is used for sequence modeling. Evaluation across five random seeds shows that LR remains a very strong global baseline: LR obtains RMSE 0.006333, MAE 0.004678, and $R^2=0.988452$, while the Hybrid Residual model obtains RMSE $0.007187 \pm 0.001904$, MAE $0.005156 \pm 0.001064$, and $R^2=0.984295 \pm 0.009279$. A Diebold-Mariano test does not show statistically significant improvement of the Hybrid Residual model over LR on the full test set or on the peak subset where $y \ge 0.20$ (114 of 1266 test points). The contribution of the residual architecture is therefore framed as interpretability, failure-mode analysis, and deployable decomposition rather than as a global accuracy win over LR. Relative to Random Forest, the Hybrid Residual model reduces RMSE by 15.4\% and unexplained variance by 24.0\%. The blockchain component is presented as a prototype oracle architecture evaluated on a local Hardhat Ethereum node; a 12-module testing suite (62 test cases, all passing) validates hash integrity, chain linkage, PGS gating correctness, gas economics, pipeline latency (2.47~ms end-to-end), throughput (709 TPS for forecast anchoring), and storage efficiency (2.24:1 compression ratio). Privacy analysis and mainnet deployment remain future work. Under the same scheduling threshold of 0.15, LR and the Hybrid Residual model identify the same 280 eligible hours out of 1266 test hours and produce the same scheduled renewable share of 25.81\%, increasing renewable utilization from 15.34\% to 25.81\% during scheduled windows.
-\end{abstract}
-
+Smart grid operations depend on accurate forecasts for renewable energy in order to effectively make decisions regarding dispatch, storage, and scheduling based on renewable energy resources when there is high variability in output. In this paper, we develop a residual decomposition methodology using a Bidirectional Long Short-Term Memory (BiLSTM) network trained solely to capture the residual errors remaining after a Linear Regression (LR) model has been fitted to an hourly time series of renewable energy production. The BiLSTM model is trained to learn patterns in the residuals that will enable it to accurately predict the remaining portion of each hour's production. We also use the residual training method to improve the interpretability of our models and to provide a way to analyze failures in our models. While the BiLSTM model provides no additional reduction in root mean square error (RMSE) relative to the LR model over the entire dataset, it is still useful for providing insight into how much of the total variability can be attributed to each type of residual pattern. As expected, our hybrid residual model provided better results than the Random Forest model for both RMSE and unexplained variance. We evaluate the blockchain architecture developed in this research using a Hardhat Ethereum node running locally on one computer. Our 12-module test suite contained 62 tests that were run against the codebase to ensure the correct functionality of the oracle, and all tests passed. These tests included evaluations of hash integrity, linking chains together correctly, PGS gating correctness, gas economics, pipeline latency (the average end-to-end latency was approximately 2.47~ms), throughput (709 TPS for forecast anchoring), and storage efficiency (we achieved a compression ratio of 2.24:1). Privacy analysis and mainnet deployment remain areas for future investigation. Both the LR and the Hybrid Residual model identified 280 eligible hours out of 1266 test hours for renewable energy production under a given threshold of 0.15. Both models produced the same scheduled renewable share of 25.81\%.\end{abstract}
 \begin{keywords}
 Attention mechanism, bidirectional LSTM, blockchain oracle, energy-aware scheduling, residual decomposition, renewable-energy forecasting, smart grid.
 \end{keywords}
@@ -112,7 +117,7 @@ The long short-term memory (LSTM) network was developed to deal with the issue o
 Attention mechanisms are capable of weighting different temporal positions in relation to how relevant they are to the task being modeled~\cite{bahdanau,luong}. The transformer architecture expands upon this concept via self-attention and has resulted in many successful applications within sequence modeling~\cite{vaswani}. Variants including temporal fusion transformer, informer, autoformer, FEDformer, PatchTST, and TimesNet have improved multi-horizon forecasting and long-sequence modeling~\cite{lim,zhou_informer,wu_autoformer,zhou_fedformer,nie,wu_timesnet}. However, traditional transformer architectures require quadratic memory growth with increasing sequence lengths and generally require larger training sets. Given moderately sized datasets and real-time deployment scenarios, lightweight attention-based recurrent models may serve as a more practical approach~\cite{li_attention_access,gao_attention_access,zhou_wind_bilstm_access}. Preliminary experiments conducted on the Tamil Nadu task demonstrated that multiple energy-aware attention variants produced minor marginal improvement before reaching a plateau. Due to these findings, the decision was made to pursue a residual decomposition strategy.
 
 \subsection{Blockchain-Based Energy Systems}
-The use of blockchain technology has received significant attention in terms of Transactive Energy, Peer-to-Peer Markets, Smart Contracts, and Decentralized Settlement~\cite{andoni,mengelkamp,aitzhan,li_consortium,kang,noor,mollah,szabo,buterin,tushar_access,wang_blockchain_access}, all of which enhance system-wide transparency. Most, however, rely upon historical meter reads or ex-post transactional logs. Trustworthy oracle mechanisms, decentralized data feeds, and authenticated off-chain computation are important considerations for blockchains that rely on physical world measurements or machine-learning predictions~\cite{albreiki,chainlink,zhang_towncrier,kosba,taghavi}.
+Blockchain technology has gained significant traction in Transactive Energy, Peer-to-Peer Markets, Smart Contracts, and Decentralized Settlement~\cite{andoni,mengelkamp,aitzhan,li_consortium,kang,noor,mollah,szabo,buterin,tushar_access,wang_blockchain_access}, all of which enhance system-wide transparency. Most, however, rely upon historical meter reads or ex-post transactional logs. Trustworthy oracle mechanisms, decentralized data feeds, and authenticated off-chain computation are important considerations for blockchains that rely on physical world measurements or machine-learning predictions~\cite{albreiki,chainlink,zhang_towncrier,kosba,taghavi}.
 
 \subsection{Research Gaps and Problem Formulation}
 Three coupled gaps exist among the reviewed literature that motivate this study. First, although prior renewable forecasting studies have treated the full generation signal as a singular target for nonlinear models, this forces those same models to re-learn deterministic diurnal structures that simpler baselines already effectively capture; this waste of model capacity reduces robustness in high-variability environments. Second, there is little documentation of failure modes among prior evaluations of deep learning for energy forecasting. When standalone recurrent models perform worse than linear baselines, there is rarely documented evidence on why this occurred or what architectural modifications were attempted; thus practitioners lack actionable knowledge. Third, blockchain-based energy platforms and forecasting research are largely independent of one another; energy trading systems document transactions but do not document verifiable forecasts, whereas forecasting studies document accuracy metrics but do not provide an auditable means of enforcing signals for scheduling and trading purposes. There is no currently available integrated framework that serializes ML forecast payload outputs into distributed storage systems and utilizes them as on-chain gate logic for determining trading decisions. The Hybrid Residual model with blockchain oracle integration provides solutions for each of these three gaps. The above gaps are summarized in Table~\ref{tab:gaps}.
@@ -146,28 +151,26 @@ Blockchain Energy Systems & Transparency, decentralization, and auditable settle
 The proposed integrated framework links forecasting, validation, and scheduling within one decision pathway. Renewable data from Tamil Nadu is used to create both cyclical and physical features from modeled and observed operating data. The residual structure learned by the attention-based BiLSTM model plus a linear baseline represents the dominant deterministic relationship. The corrected forecast along with metadata is then forwarded to an oracle layer for validation and anchoring prior to being consumed by scheduling or trading logic. The key architectural contribution is that these three layers (forecasting, blockchain decision, and actuation) were developed together. Forecasting is not treated as a secondary product; rather, it is the primary operational variable determining if trading or energy-intensive execution should occur.
 
 \subsection{Blockchain as Decision-Layer Infrastructure}
-In the design of this integrated framework, blockchain is utilized as the decision-layer infrastructure due to its ability to provide trust, transparency, and tamper-proof validation in multi-party energy systems~\cite{blockchain_dispatch_access}. Through cryptographic hashing and distributed-consensus mechanisms, this system provides assurance that forecast-driven scheduling and trading decisions are auditable and cannot be manipulated by any actor. This is particularly important in peer-to-peer energy networks and renewable-aware compute-scheduling environments where numerous actors need to operate under shared forecast signals.
+Blockchain integration: blockchain is used as the decision-layer infrastructure in this integrated framework because of its ability to provide trust, transparency, and tamper-proof validation for multiple parties within energy systems~\cite{blockchain_dispatch_access}. Cryptographic hashing and distributed consensus mechanisms used by blockchain allow for assurance that forecast-driven scheduling and trading decisions are auditable and cannot be manipulated by any actor. This is especially important in peer-to-peer energy networks and renewable-aware compute-scheduling environments where numerous actors need to operate under shared forecast signals.
 
-The mechanism of integration is as follows: after forecasting has occurred, a validation node bundles the forecasted value along with relevant feature attributes, timestamp, and schedule-eligibility metadata into a canonical JSON object. It is crucial to serialize this object deterministically because standard JSON objects may vary by key ordering and whitespace. Once serialized, the payload is written off-chain to the Interplanetary File System (IPFS), which returns a Content Identifier (CID)~\cite{ipfs_blockchain_access}. At the same time, the payload is hashed using keccak256 and only the compact fingerprint along with the CID and associated renewable score are stored on-chain to prevent blockchain bloat while maintaining full verifiability.
+Mechanism of integration: after forecasting has occurred, a validation node bundles the forecast value along with relevant feature attributes, a timestamp, and schedule-eligibility metadata into a canonical JSON object. It must be deterministically serialized because standard JSON objects may vary depending on key ordering and whitespace. Once serialized, the payload is written off-chain to the Interplanetary File System (IPFS), which returns a Content Identifier (CID)~\cite{ipfs_blockchain_access}. At the same time, the payload is hashed using keccak256, and only the compact fingerprint along with the CID and associated renewable score are stored on-chain to prevent blockchain bloat while maintaining full verifiability.
 
-The oracle layer performs four functions: (1) validates the forecast payload and metadata; (2) calculates a cryptographic digest of the forecast object; (3) anchors the digest to a ledger record via consensus; and (4) exposes the validated forecast as an input to decision-layer scheduling and trading logic.
-
-\textbf{Scope clarification:} The blockchain component includes a working Solidity prototype evaluated on a local Hardhat Ethereum node with measured gas costs, latency, throughput, and a 12-module automated testing suite (Section VII). Privacy analysis and mainnet deployment remain future work.
-
+The oracle layer performs four functions: (1) validates the forecast payload and metadata; (2) calculates a cryptographic digest of the forecast object; (3) anchors the digest to a ledger record via consensus; and (4) exposes the validated forecast as input to decision-layer scheduling and trading logic.
 
 \section{Methodology}
-\subsection{Problem Formulation}
-Let $\mathbf{x}_t$ denote the multivariate feature vector at time $t$, including renewable capacity factors, generated power, modeled load, modeled state of charge, and cyclical time encodings. The target $y_t$ is the normalized renewable-generation signal in log-transformed form:
+\subsubsection{Problem Formulation}
+
+Let $\mathbf{x}_{t}$ represent a vector of multidimensional features at time $t$. This includes renewable capacity factors, generated power, modeled load, modeled state of charge, and cyclical time encoding. The desired output $y_{t}$ is the normalized renewable generation signal in log space:
+
 \begin{equation}
-y_t = \log\left(1 + \frac{P^{gen}_t}{P^{peak}}\right),
+y_{t}=\log\left(1+\dfrac{P^{gen}_{t}}{P^{peak}}\right)
 \end{equation}
-where $P^{gen}_t$ is total renewable generation and $P^{peak}$ is the peak-load normalization constant. The model uses $\mathbf{X}_{t-L+1:t}$ with a lookback window $L=48$ hours. The main challenge is that the series contains both linear and nonlinear components. The majority of the series is a function of time with strong periodic nature due to solar position and wind patterns. However, some portions reflect abrupt changes due to localized weather conditions or variations in storage load, which are operationally significant.
 
-\subsection{Dataset Construction}
-The core renewable generation data is derived from the GridPath India long-term power-system planning dataset, which provides hourly capacity-factor traces for solar and wind resources~\cite{gridpath}. Tamil Nadu records are filtered from fixed-tilt solar PV, single-axis solar PV, rooftop solar PV, and adjusted existing wind folders. Each source is checked for hourly continuity, missing timestamps, duplicate timestamps, and null values. The final hourly renewable table contains 8760 observations for calendar year 2019.
+where $P^{gen}_{t}$ represents the total renewable generation at hour $t$, and $P^{peak}$ is the peak-load normalization factor. For this problem, we use $\mathbf{X}_{t-L+1:t}$ where $L=48$ hours. The time series contains both linear and nonlinear components. Most of the variance follows strong periodic characteristics driven by the sun's position and wind patterns, while abrupt changes in certain regions represent local weather events or load variations associated with battery discharge and charging.
 
-Modeled load is represented with a deterministic daily profile bounded between 7000~MW and 14000~MW. Modeled battery state of charge (SoC) follows configured storage limits, charge/discharge efficiencies, and maximum rate constraints. These modeled components provide a consistent evaluation environment and do not replace the underlying real-world generation data.
+\subsubsection{Data Set Construction}
 
+We used renewable generation data from the GridPath India long-term power-system planning data set to create our core renewable generation time series. GridPath provides hourly capacity-factor traces for solar and wind resources. We extracted records from Tamil Nadu for fixed-tilt solar PV, single-axis solar PV, rooftop solar PV, and adjusted existing wind. We reviewed each source for hourly continuity, missing timestamp entries, duplicated timestamp entries, and null entries. Our final hourly renewable data table contained 8760 rows of data for calendar year 2019. A deterministic daily load profile was created with an upper bound of 14{,}000~MW and a lower bound of 7{,}000~MW. A modeled battery SoC followed established storage boundaries, charging/discharging efficiency boundaries, and maximum rates. In addition to providing a stable test bed, these modeled elements did not substitute for the underlying real-world generation data.
 \begin{table}[!t]
 \caption{Dataset and Feature Summary}
 \label{tab:dataset_summary}
@@ -248,8 +251,13 @@ Table~\ref{tab:architecture} reports the exact architecture. The model has 4,081
 While Transformer-based architectures offer powerful sequence modeling capabilities through self-attention mechanisms, they typically require larger datasets and higher computational resources. Recent deep-learning surveys confirm that hybrid recurrent-attention architectures remain competitive for moderate-scale energy data~\cite{dl_timeseries_access,lee_solar_access,abdel_nabi_access}. The present dataset has 8760 hourly observations and 6084 training sequences after lookback construction. For this scale, a 4,081-parameter attention-BiLSTM is more efficient and easier to deploy near the edge than a full Transformer. The proposed Hybrid Residual model shares conceptual similarity with Transformer attention in its ability to emphasize salient temporal features; however, it retains a recurrent structure more suitable for moderate-sized datasets. In preliminary experimentation, GRU models were notably unstable and underperformed substantially, while plain LSTM models were more competitive but insufficient when trained end-to-end on the full target.
 
 \subsection{Residual Learning Justification}
-The choice of residual decomposition over full-signal learning rests on three complementary arguments. First, the Tamil Nadu generation signal is dominated by a near-deterministic diurnal and seasonal skeleton. Fitting a nonlinear model to this signal forces it to allocate most capacity to re-discovering structure that a linear model already captures with high fidelity. The residual has substantially lower variance than the original target, making the nonlinear learning problem more tractable and convergence more stable. Second, if either the additive noise branch or the attention-BiLSTM learns a nearly zero residual, the composite model behaves like the linear baseline rather than diverging. This provides a safe operating condition since forecasting errors in scheduling can lead to trading errors or unnecessary storage cycling. Third, EA-BiLSTM v1, v2, and ACHF were all trained end-to-end on the full normalized target despite increasing architectural complexity, and none outperformed Linear Regression on global error measures. By decomposing into a linearizable portion and training the residual using a significantly reduced sparse target, both issues were simultaneously addressed.
+The residual decomposition approach over the full-signal learning process depends on three related arguments.
 
+First, the Tamil Nadu generation signal is primarily composed of a deterministic, diurnal, and seasonal pattern. Training a nonlinear model to capture the structure of the generation signal forces it to spend most of its computational resources reproducing the same patterns already captured with high fidelity by a linear model. As a result, the residual signal has much lower variance than the original target signal, reducing the dimensionality of the nonlinear optimization problem and promoting stability in convergence.
+
+Second, as long as one of the two components of the composite model learns a residual close to zero, the overall model behaves similarly to the linear baseline rather than deviating from it. This provides a safe operating point, since forecasting errors associated with scheduling can result in trading errors or unnecessary storage cycling.
+
+Third, although the EA-BiLSTM v1, v2, and ACHF variants were each trained end-to-end on the full normalized target despite increased architectural complexity, none outperformed Linear Regression on global error measures. Decomposing the model into a linearizable component and training the residual learner on a smaller, more focused target addresses both issues simultaneously.
 
 \section{Experimental Setup}
 \subsection{Data Split and Sequence Construction}
@@ -313,9 +321,9 @@ BiLSTM & 0.871241 & 0.021148 & Bidirectional; full-signal target \\
 
 
 \section{Results and Evaluation}
-\subsection{Global Forecasting Performance}
-Table~\ref{tab:global_performance} reports validation and test metrics for all evaluated models. Linear Regression and the Hybrid Residual model show comparable global performance. Although the Hybrid Residual model achieves performance comparable to Linear Regression on global error metrics, its primary contribution is the decomposed, auditable architecture rather than a global accuracy win. The comparison with Linear Regression should be read as practical parity on global metrics. The Tamil Nadu series is sufficiently structured that a simple linear model already provides a very strong global baseline. Relative to Random Forest, the Hybrid Residual model reduces test RMSE by 18.6\% (from 0.008497 to 0.006918) and reduces unexplained variance by 33.7\%.
+\subsection{Performance of Global Forecasting Models}
 
+Validation and test metrics for all evaluated models are reported in Table~\ref{tab:global_performance}. While both Linear Regression and the Hybrid Residual model have similar global performance characteristics, the Hybrid Residual model has global forecast error metric performance equal to that of Linear Regression; however, its most significant contribution is a decomposed, auditable framework, not an improvement in global accuracy. A comparison of the Hybrid Residual Model to Linear Regression is reasonable, as they are essentially equivalent in terms of global forecasting. Since a simple linear model is already able to provide a very strong global forecasting benchmark for this data set, there is no reason why we would expect a large difference from a more complex model such as the Hybrid Residual model. Compared to Random Forest, the Hybrid Residual model improves forecast test RMSE by 18.6\% (from 0.008497 to 0.006918), and improves unexplained variance by 33.7\%.
 \begin{table}[!t]
 \caption{Global Model Performance (Log-Scale, Unified Evaluation)}
 \label{tab:global_performance}
@@ -336,7 +344,7 @@ Hybrid Residual (5-seed std.) & $\pm$0.001904 & $\pm$0.001064 & $\pm$0.009279 \\
 \end{table}
 
 \subsection{Single-Run Metrics (Historical Reference)}
-The earlier manuscript reported a single-run comparison in which LR and the Hybrid Residual model were nearly identical. That result is retained only as a historical single-run output, not as the final robustness claim.
+A single-run comparison in which LR and the Hybrid Residual model were nearly identical was previously obtained. That result is retained only as a historical single-run output, not as the final robustness claim.
 
 \begin{table}[!t]
 \caption{Historical Single-Run Metrics}
@@ -393,7 +401,7 @@ Mean DM $p$-value & 0.2022 & & \\
 The mean DM statistic of $-0.39$ with $p=0.20$ indicates that the difference between LR and the Hybrid Residual model is not statistically significant at $\alpha=0.05$. Only 1 of 5 seeds achieves significance, confirming near-parity.
 
 \subsection{Repeated-Seed Robustness}
-Table~\ref{tab:seed_results} summarizes five Hybrid Residual training runs. Only one seed produces a significant DM result at $p<0.05$, and the average DM statistic remains negative. The revised conclusion is that the Hybrid Residual model achieves near-parity but does not consistently outperform LR.
+Table~\ref{tab:seed_results} summarizes five Hybrid Residual training runs. Only one seed produces a significant DM result at $p<0.05$, and the average DM statistic remains negative. These results indicate that the Hybrid Residual model achieves near-parity but does not consistently outperform LR.
 
 \begin{table}[!t]
 \caption{Hybrid Residual Model Across Five Seeds (Log-Scale)}
@@ -479,45 +487,45 @@ The visual progression reinforces the limitations of standalone architectures. W
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\linewidth]{prediction_vs_actual.png}
+\includegraphics[width=\linewidth]{figures/prediction_vs_actual.png}
 \caption{Prediction versus actual renewable target. The interpretation is near-parity between LR and the Hybrid Residual model on global metrics.}
 \label{fig:prediction_actual}
 \end{figure}
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\linewidth]{r2_comparison.png}
+\includegraphics[width=\linewidth]{figures/r2_comparison.png}
 \caption{$R^2$ comparison across models. Linear Regression and the Hybrid Residual model explain nearly identical variance, while Random Forest explains less. The key insight is that global variance is dominated by the deterministic renewable-generation structure, which both the linear baseline and the residual model capture effectively. Residual learning should complement, not discard, the interpretable baseline.}
 \label{fig:r2_comparison}
 \end{figure}
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\linewidth]{error_distribution.png}
+\includegraphics[width=\linewidth]{figures/error_distribution.png}
 \caption{Prediction-error distribution for the Hybrid Residual model. The large majority of prediction errors are tightly concentrated near zero, with a near-symmetric bell-shaped profile and standard deviation of 0.007326. The model is not systematically biased in either direction, confirming that the residual branch correctly centers its correction around zero. The non-negligible tail mass indicates that peak-window and heteroscedastic error analysis remains necessary.}
 \label{fig:error_distribution}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\linewidth]{stage4_test_predictions_full.png}
+\includegraphics[width=\textwidth]{figures/stage4_full_horizon.png}
 \caption{Stage-4 predictions versus actual values across the full test horizon. All evaluated models follow the broad renewable-generation trajectory, with the Hybrid Residual model maintaining close agreement throughout. Deterministic structure controls most global variance and all three models track the seasonal and daily envelope reasonably well. Residual correction is most valuable in the localized nonlinear regions visible as short-term deviations from the envelope.}
 \label{fig:full_horizon}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\linewidth]{stage4_test_predictions_first168h.png}
+\includegraphics[width=\textwidth]{figures/stage4_first168h.png}
 \caption{Stage-4 predictions versus actual values during the first 168 test hours. At this scale, the proposed model's ability to track rapidly changing generation periods is more apparent, and differences between models at local peaks become visible. Short-horizon visualization exposes operational error patterns that full-horizon plots compress and obscure.}
 \label{fig:first168}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\linewidth]{before_after_comparison.png}
+\includegraphics[width=\textwidth]{figures/ablation_comparison.png}
 \caption{Ablation analysis tracking the progression from early standalone sequence models to the final proposed residual architecture. Iterative attention enhancements (v1 to v2) and architectural fusions (ACHF) incrementally improve test $R^2$ and MAE, but they quickly approach a performance ceiling. The leap achieved by the proposed residual decomposition confirms the theoretical motivation: isolating deterministic signal structure fundamentally simplifies the learning task.}
 \label{fig:ablation_visual}
-\end{figure}
+\end{figure*}
 
 
 \section{Blockchain Oracle and Scheduling Evaluation}
@@ -533,7 +541,7 @@ The empirical scheduling gate is:
 \begin{equation}
 E_t = \mathbb{1}[\hat{y}_t \ge 0.15] = \mathbb{1}[PGS_t \ge 1500].
 \end{equation}
-This is a deterministic forecast-strength score, not a calibrated probabilistic confidence score. The previous manuscript inconsistently described both a 0--100 confidence score and a 7000/10000 on-chain threshold. This revised definition removes that inconsistency by defining PGS on a 0--10000 integer scale with the empirical threshold at 1500 (corresponding to the 0.15 normalized forecast threshold). Calibrated uncertainty-aware PGS design remains future work.
+This is a deterministic forecast-strength score, not a calibrated probabilistic confidence score. To ensure deterministic on-chain behavior, the PGS is explicitly defined on a 0--10000 integer scale, establishing a clear threshold of 1500 (corresponding to the 0.15 normalized forecast threshold). Calibrated uncertainty-aware PGS design remains future work.
 
 \subsection{Forecast-Aware Scheduling}
 The scheduling model uses a forecast threshold of 0.15 to identify periods suitable for renewable-friendly scheduling. The key finding is that under this threshold rule, LR and the Hybrid Residual model produce \emph{identical} scheduling outcomes. Table~\ref{tab:scheduling_comparison} compares all three forecast sources under the same rule.
@@ -601,11 +609,16 @@ Forecasting-only & $\checkmark$ & $\times$ & $\times$ & $\times$ \\
 The blockchain layer stores information about whether an action triggered by a forecast was permissible, which payload was used, and what hash anchored the decision. In decentralized energy systems, this audit trail is critical since forecast-based actions impact producers, consumers, grid operators, and third-party auditors. The forecast hash, timestamp, and eligibility determination create a verifiable chain from model output to operational outcome.
 
 \subsection{Prototype Smart Contract Evaluation}
-To address the reviewer concern that the blockchain layer is described but not evaluated, we implement and benchmark a three-contract prototype using Solidity 0.8.24 on a local Hardhat Ethereum node. The contracts are:
+The first three-contract prototype was implemented using Solidity v0.8.24 on a testnet version of a local Hardhat Ethereum node.
+
+These were the three contracts used in this prototype:
+
 \begin{itemize}
-\item \textbf{PredictionStorage}: Anchors forecast payloads via IPFS CID and keccak256 hash; stores PGS and submitter address.
-\item \textbf{EnergyTrading}: PGS-gated trading with escrow; only allows trades when $PGS_t \ge 1500$.
-\item \textbf{TradeDispute}: Manages disputed settlements through an arbiter-resolution mechanism.
+\item \textbf{PredictionStorage}: Forecasts are stored in the PredictionStorage contract by anchoring the forecast payload via an IPFS CID and a keccak256 hash. The contract also stores the payload group size (PGS) of the submitted forecasts and the submitter's address.
+
+\item \textbf{EnergyTrading}: Trading is enabled in the EnergyTrading contract to allow energy trading only when $PGS_t \ge 1500$.
+
+\item \textbf{TradeDispute}: Disputed settlement management is provided by the TradeDispute contract, which uses an arbiter-resolution process.
 \end{itemize}
 
 Table~\ref{tab:gas_benchmark} reports measured gas costs and latency from 9 passing test scenarios including batch anchoring of 280 eligible forecast hours. All tests pass, confirming that the PGS gating logic, payload verification, and trade lifecycle function correctly.
@@ -629,19 +642,19 @@ Full pipeline (anchor$\rightarrow$trade$\rightarrow$verify) & -- & -- & 6 ms \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\textbf{Scope note:} These benchmarks are measured on a local Hardhat node (instant mining, no network latency, no mempool contention). Production deployment on Ethereum mainnet or an L2 rollup would introduce additional latency (block time 12s on L1, $<$2s on L2) and variable gas prices. Privacy evaluation (e.g., zero-knowledge proofs for payload confidentiality) and consensus-level adversarial analysis remain future work.
+\textbf{Scope Note:} All benchmarks were run against a local Hardhat node (instant mining; no network latency; no mempool contention). Running production on Ethereum Mainnet or an L2 rollup would add additional latency (L1 block time = 12~seconds; L2 block time $< 2$~seconds) and fluctuating gas prices. Additionally, privacy evaluations (i.e., the use of zero-knowledge proofs for payload confidentiality) and consensus-level adversarial analyses remain areas for future work.
 
 \subsection{Robustness Evaluation}
-A comprehensive test suite of 29 test scenarios (9 functional + 20 robustness) validates the smart contract prototype across six categories:
+
+Twenty-nine test scenarios were created to test the Smart Contract Prototype across six categories:
 
 \begin{enumerate}
-\item \textbf{Immutability \& Tamper-Resistance} (4 tests): Duplicate anchoring is rejected; tampered payloads are detected via hash mismatch; empty hashes and CIDs are rejected.
-\item \textbf{PGS Boundary Tests} (5 tests): PGS values above 10000 are rejected; boundary behavior at PGS=1499 (blocked) and PGS=1500 (allowed) is verified.
-\item \textbf{Access Control} (3 tests): Non-arbiters cannot resolve disputes; non-parties cannot raise disputes; sellers cannot fill their own trades.
-\item \textbf{Escrow \& Financial Safety} (4 tests): Funds are held correctly; withdrawals transfer exact amounts; excess payments are refunded; double-withdrawal is prevented.
-\item \textbf{Throughput \& Scalability} (2 tests): 1000 sequential forecast anchors complete at 199 tx/sec with average gas 232,136 per anchor; 100 trade lifecycles (create + fill) complete with average gas 170,122 + 50,324 per trade.
-\item \textbf{Deterministic Serialization} (2 tests): Canonical JSON key ordering produces consistent hashes; payload verification is repeatable across 100 calls.
+\item \textbf{Immutability \& Tamper-Resistance} (4 tests): Test that duplicate anchoring was rejected; test that payloads that had been tampered with could be detected by comparing hashes; test that an empty hash and/or CID could be rejected.
+\item \textbf{PGS Boundary Tests} (5 tests): Test that values of PGS greater than 10{,}000 are rejected; test the boundary behavior when $PGS = 1499$ (blocked), and when $PGS = 1500$ (allowed).
+\item \textbf{Access Control} (3 tests): Test that non-arbiters cannot resolve disputes; test that parties who are not part of a dispute cannot raise a dispute; test that sellers cannot fill their own trades.
+\item \textbf{Escrow \& Financial Safety} (4 tests): Test that funds are properly stored; test that withdrawals result in exactly the amount requested; test that excess payments are returned; test that double withdrawals are blocked.
+\item \textbf{Throughput \& Scalability} (2 tests): Test that 1{,}000 consecutive forecast anchor operations may occur at a rate of 199 transactions per second with an average gas cost of 232{,}136 per operation. Test that 100 trade lifecycles (create + fill) may occur with an average gas cost of 170{,}122 + 50{,}324 per trade.
+\item \textbf{Deterministic Serialization} (2 tests): Test that canonical JSON key ordering results in consistent hashes. Test that payload verification is repeatable after making 100 calls.
 \end{enumerate}
 
 All 29 tests pass. Table~\ref{tab:robustness_summary} summarizes the key quantitative findings.
@@ -706,9 +719,9 @@ Overhead vs.\ ETH transfer & \multicolumn{2}{c}{696.85\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
+\subsubsection{Subsection on Cryptographic Hashing Overhead}
 
-\subsubsection{Cryptographic Hashing Overhead}
-Table~\ref{tab:hashing_overhead} compares local keccak256 computation cost against on-chain verification gas cost across three payload sizes. The cost ratio quantifies the economic premium of on-chain anchoring relative to local computation speed.
+Table~\ref{tab:hashing_overhead} compares the local keccak256 computation cost with the on-chain verification gas cost over three payload sizes. The cost ratio represents the price paid for on-chain anchoring compared to the speed of local computation.
 
 \begin{table}[!t]
 \caption{Hashing Overhead: Local vs.\ On-Chain}
@@ -726,9 +739,10 @@ Table~\ref{tab:hashing_overhead} compares local keccak256 computation cost again
 \end{table}
 
 \subsubsection{Temporal Performance}
-Oracle pipeline end-to-end latency averages 2.47~ms on the local Hardhat node (12 iterations). The stage-level breakdown shows that transaction submission dominates at 1.75~ms (70.9\%), while payload hashing (0.12~ms), CID generation (0.20~ms), and block confirmation (0.35~ms) contribute smaller fractions. Off-chain canonical JSON serialization completes in under 0.02~ms for payloads up to 10~KB.
 
-Block finality was measured across 50 transactions per operation type. Table~\ref{tab:finality} reports latency statistics under automine mode and interval mining configurations.
+The average time taken from start to finish for the oracle pipeline is 2.47~ms on the local Hardhat node (12 iterations). The time spent in each stage shows that transaction submission takes by far the most time at 1.75~ms (70.9\%), followed by payload hashing (0.12~ms), CID generation (0.20~ms), and block confirmation (0.35~ms). Off-chain canonical JSON serialization takes less than 0.02~ms for all payloads up to 10~KB.
+
+To measure block finality, we ran 50 transactions per operation type. Table~\ref{tab:finality} contains the latency statistics using both automine mode and interval mining configurations.
 
 \begin{table}[!t]
 \caption{Block Finality Latency (Automine Mode, 50 Iterations)}
@@ -746,14 +760,14 @@ resolveDispute & 1.41 & 1.09 & 2.09 & 0.22 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-Under interval mining (simulating real block production), finality latency scales proportionally: at 1000~ms intervals, mean finality is 1009--1019~ms per operation. This confirms that the contract logic adds negligible overhead ($<$2~ms) beyond the mining interval itself. Transaction confirmation time corresponds to local Hardhat block confirmation under automine settings; production-network confirmation times were not evaluated and remain future work.
+Realistic block generation (interval mining) shows that finality latency increases linearly in relation to the mining interval: on average, we see 1009--1019~ms as the finality for each transaction over a mining interval of 1000~ms. As such, there is little to no additional cost ($<2$~ms) incurred by the smart contract logic above the cost of the mining interval. Transaction confirmation time corresponds to our local Hardhat environment for automine block confirmation; however, production network confirmation was not evaluated as part of this work but remains an area of interest for future evaluation.
 
 \subsubsection{Throughput and Scalability}
-Stress testing submitted 500 concurrent forecast anchoring transactions distributed across 10 signer accounts. Table~\ref{tab:throughput} summarizes the throughput results.
+
+To evaluate performance, stress testing was performed where 500 forecast anchor transactions were concurrently sent to our chain through 10 separate signing accounts. The results of these tests are shown in Table~\ref{tab:throughput}.
 
 \begin{table}[!t]
-\caption{Transaction Throughput Stress Test Results}
+\caption{Results from stress testing of transaction throughput.}
 \label{tab:throughput}
 \centering
 \begin{tabular}{lcc}
@@ -765,59 +779,69 @@ Confirmed & 500 & 200 \\
 Reverted & 0 & 0 \\
 Elapsed time (s) & 0.71 & 0.19 \\
 Average gas/tx & 232,154 & 110,566 \\
-\textbf{TPS} & \textbf{709.24} & \textbf{1,048.74} \\
+\textbf{TPS} & \textbf{709.24} & \textbf{1048.74} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The local node achieves 709 TPS for forecast anchoring and 1049 TPS for trade lifecycle operations with zero reverts across all concurrent submissions.
+The local node achieved 709 TPS for forecast anchoring and 1049 TPS for trade lifecycle functionality without encountering any reverted transactions during the stress-test submission process.
 
-\subsubsection{Storage Optimization}
-The hybrid on-chain/off-chain design achieves a compression ratio of 2.24:1. A canonical JSON forecast payload occupies 175 bytes, while the on-chain footprint (32-byte hash + 46-byte CIDv0) requires only 78 bytes. The full ForecastRecord struct (including timestamp, hash, CID, PGS, submitter, and block number) occupies 206 bytes per forecast. For 280 eligible scheduling hours per week (7 days $\times$ 40 eligible hours), cumulative weekly on-chain state growth is 57,680 bytes (56.33 KB), confirming minimal blockchain bloat.
+\subsubsection{Storage Optimizations}
+
+Our hybrid on-chain/off-chain approach resulted in a storage compression ratio of approximately 2.24:1. While the canonical JSON representation of a single forecast occupies 175 bytes, the actual size of the data stored on-chain is 78 bytes: a 32-byte hash and a 46-byte CIDv0. Furthermore, the ForecastRecord struct (which includes a timestamp, hash, CID, PGS, submitter, and block number) occupies 206 bytes for every forecast. Given that there are 280 eligible hours per week (i.e., $7$ days $\times$ $40$ eligible hours), the total amount of weekly on-chain state growth for these schedules would be approximately 57,680 bytes (approximately 56.33~KB). We can therefore confirm that our use of blockchain does not result in significant amounts of ``bloat.''
 
 \subsubsection{Static Security Analysis}
-The SAST module integrates Slither or Mythril for automated vulnerability detection and computes a composite security score using the formula $\text{score} = 100 - (10 \times n_{high} + 5 \times n_{med} + 2 \times n_{low} + 1 \times n_{info})$, clamped to [0, 100]. The module gracefully skips when SAST tools are unavailable, enabling portable test execution across environments.
 
-\subsubsection{Summary of Blockchain Validation}
-Table~\ref{tab:blockchain_validation_summary} provides a consolidated view of the blockchain testing results.
+The SAST module utilizes either Slither or Mythril to automatically detect potential vulnerabilities in the codebase. It then uses a formula based on the number of high-, medium-, low-, and informational-severity issues found by Slither/Mythril to compute a composite security score:
+
+\begin{equation}
+\text{score}=100-(10\times n_{\text{high}}+5\times n_{\text{med}}+2\times n_{\text{low}}+1\times n_{\text{info}})
+\end{equation}
+
+If one or both of the SAST tools is missing, fails, or is unavailable, the module will simply skip that step, thus making it possible to execute tests in a variety of different test environments.
+
+\subsubsection{Summary of Blockchain Validations}
+
+A summary of the blockchain validations is provided in Table~\ref{tab:blockchain_validation_summary}.
 
 \begin{table}[!t]
-\caption{Blockchain Testing Suite: Consolidated Results}
+\caption{Consolidation of all blockchain validation suite testing.}
 \label{tab:blockchain_validation_summary}
 \centering
 \begin{tabular}{lc}
 \toprule
 \textbf{Metric} & \textbf{Result} \\
 \midrule
-Total test cases & 62 (all passing) \\
+Total test cases & 62 (All passed) \\
 Test modules & 12 \\
-Hash integrity & 100\% detection \\
-Chain linkage & Verified to genesis \\
-PGS boundary enforcement & Exact at 1500 \\
-Forecast anchoring TPS & 709.24 tx/s \\
-Trade lifecycle TPS & 1,048.74 tx/s \\
-Pipeline latency (automine) & 2.47 ms \\
-Finality latency (1s interval) & $\sim$1,010 ms \\
-Storage compression & 2.24:1 \\
-Weekly state growth (280 forecasts) & 56.33 KB \\
-Gating overhead vs.\ ETH transfer & 696.85\% \\
-Reverted transactions (stress test) & 0 / 700 \\
+Hash integrity & Detected correctly -- 100\% \\
+Chain linkage & Verified back to genesis \\
+PGS boundary enforcement & $=1500$ exactly \\
+Forecast anchoring TPS & 709.24 tx/sec \\
+Trade lifecycle TPS & 1048.74 tx/sec \\
+Pipeline latency (Automine) & 2.47 ms \\
+Finality latency (Interval 1 sec.) & $\sim$1010 ms \\
+Storage Compression Ratio & 2.24:1 \\
+Weekly State Growth (280 Forecasts) & 56.33 KB \\
+Gating Overhead vs.\ ETH Transfer Cost & 696.85\% \\
+Number of reverted transactions (Stress test) & 0 / 700 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-
 \section{Discussion}
-\subsection{Comparable Global Performance with Better Operational Interpretation}
-Linear Regression remains a near-tied global baseline because the dataset has strong deterministic structure. There are both physical and data-centric explanations. Physically, Tamil Nadu renewable output at hourly aggregate scale is shaped by repeating astronomical and seasonal patterns: solar production follows a strong daily envelope, while aggregated wind at state level is smoother than site-level generation. Data-centrically, the use of state-level aggregation and engineered cyclical features exposes this regularity explicitly.
 
-The most important mechanistic explanation is the near-direct algebraic relation between input features and target. Because $P^{gen}_t$ is explicitly included in the feature vector and the target $y_t$ is a monotone transformation of $P^{gen}_t/P^{peak}$, Linear Regression effectively discovers a near-direct mapping. This saturates the available signal for nonlinear learning models operating on the full target.
+\subsection{Comparability Globally with Enhanced Operationally Interpretable Output}
 
-The Occam's razor principle applies: when two forecasting models are essentially indistinguishable in overall performance, the simpler model is preferable as the baseline. The Hybrid Residual model addresses an operational limitation by retaining the deterministic structure while selectively modeling the nonlinear residual. The contribution is not raw complexity but selective complexity.
+Linear Regression continues to be nearly tied globally (i.e., comparable) to other methods as the global baseline due to the high degree of determinism present within the dataset. There are both physical and data-centric reasons for this. Physically, the solar production pattern in Tamil Nadu at the hourly aggregate scale is dictated by recurring astronomical and seasonal patterns, whereas aggregated statewide wind (which can be less predictable at site-specific levels) is generally smoother. Data-centrically, the application of statewide aggregation, as well as the engineering of cyclical features, makes the regularity of the data explicit.
 
-\subsection{Root-Cause Analysis of Standalone BiLSTM Underperformance}
-Table~\ref{tab:rootcause} describes the four principal hypotheses as to why standalone BiLSTMs failed to outperform linear baselines on this task, along with their mechanistic rationales and confidence evaluations. This diagnosis provides practitioners with evidence that the failure was due to a structural misalignment between the task and the model, rather than simply from inadequate training data or incorrectly chosen hyperparameters.
+An essential mechanistic reason that explains the relatively direct algebraic relationship between the input features and the target variable is that $P^{gen}_{t}$ is directly part of the feature vector and $y_{t}$ is a monotonically increasing function of $P^{gen}_{t}/P^{peak}$. Thus, Linear Regression establishes a near-linear relationship. As such, this relationship also represents all of the potential signal for non-linear learning models to learn about the target variable using all of the available input features.
 
+As per Occam's Razor principle, if two forecasting models are approximately equally effective in terms of forecasting accuracy, then the simpler model should be selected as the baseline. However, unlike simple Linear Regression, the Hybrid Residual model retains a large portion of the original deterministic structure while only selectively modeling the residual component that accounts for non-linearity. Therefore, it is selective complexity---not additional complexity---that defines the contribution.
+
+\subsection{Structural Analysis of Why Stand-Alone Bi-LSTMs Failed to Out-Perform Baseline Models}
+
+Table~\ref{tab:rootcause} lists the top four hypothesized explanations for why stand-alone BiLSTMs failed to perform better than baseline models on this task, in addition to a brief discussion of each rationale and the confidence in each hypothesis. These findings provide evidence to support practitioners' claims that poor performance was due to a structural mismatch between task requirements and model capabilities (rather than solely due to insufficient training data or poorly chosen hyperparameters).
 \begin{table}[!t]
 \caption{Root-Cause Analysis of Standalone BiLSTM Underperformance}
 \label{tab:rootcause}
