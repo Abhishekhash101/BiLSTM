@@ -1,0 +1,118 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\abhis\\Desktop\\BiLSTM\\blockchain\\contracts\\EnergyTrading.sol": {
+      "lastModificationDate": 1781804320594,
+      "contentHash": "3c93ed6a80b2aa38bc61241add9ff0a7",
+      "sourceName": "contracts/EnergyTrading.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PredictionStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "EnergyTrading"
+      ]
+    },
+    "C:\\Users\\abhis\\Desktop\\BiLSTM\\blockchain\\contracts\\PredictionStorage.sol": {
+      "lastModificationDate": 1781804269827,
+      "contentHash": "f6927e077664d24e833f7a2502471907",
+      "sourceName": "contracts/PredictionStorage.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "PredictionStorage"
+      ]
+    },
+    "C:\\Users\\abhis\\Desktop\\BiLSTM\\blockchain\\contracts\\TradeDispute.sol": {
+      "lastModificationDate": 1781805125857,
+      "contentHash": "c1d400c4b074edd502959bd965e4ba31",
+      "sourceName": "contracts/TradeDispute.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./EnergyTrading.sol",
+        "./PredictionStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "TradeDispute"
+      ]
+    }
+  }
+}

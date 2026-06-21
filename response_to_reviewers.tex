@@ -1,0 +1,196 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{tabularx}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Add more spacing inside table cells
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{Response to Reviewer's comments}}
+\end{center}
+
+\vspace{1em}
+
+%% ============================================================
+{\large \textbf{Reviewer \#1 Comments and Response:}}
+
+\vspace{0.5em}
+We sincerely thank the reviewer for the constructive comments and valuable suggestions. All comments have been carefully considered, and the manuscript has been revised accordingly. Detailed responses are provided below.
+
+\vspace{0.5em}
+
+\begin{longtable}{|p{1.5cm}|p{3.5cm}|p{6.2cm}|p{2.8cm}|}
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endhead
+
+1 & Please provide stronger evidence demonstrating the advantage of the proposed model over the Linear Regression baseline. & We thank the reviewer for this suggestion. Additional robustness analyses were performed using five random seeds, state-wise evaluation across 10 Indian states, and Diebold--Mariano significance testing. The revised manuscript now explicitly states that the proposed Hybrid Residual model achieves near-parity with Linear Regression (RMSE 0.007187 $\pm$ 0.001904 vs.\ LR 0.006333; $R^2$ = 0.984295 $\pm$ 0.009279 vs.\ LR 0.988452) rather than consistent superiority. The contribution has been reframed as residual decomposition that preserves the strong performance of analytical baselines while modeling localized nonlinear residual behavior. & Abstract, Section VIII-H, Conclusion \\
+\hline
+
+2 & No statistical evidence for the one claimed benefit. Report how many test points satisfy $y \ge 0.20$, provide confidence intervals or multiple-seed variance, and run a significance test (e.g., Diebold-Mariano) for the LR-vs-proposed difference. A 0.0073 vs 0.0073 global tie and a 6\% peak difference without uncertainty quantification cannot support the stated conclusions. & Addressed comprehensively: (1) Peak subset quantified: 114 of 1266 test points satisfy $y \ge 0.20$ (9.0\%). (2) Five-seed evaluation added with mean and std for all metrics. (3) DM test on full-test and peak-test subsets: mean DM statistic = $-$0.39, $p$ = 0.20---not significant at $\alpha$ = 0.05. Only 1 of 5 seeds achieves significance. (4) Conclusion revised to state near-parity. & Section VI-C, VI-D, VI-E, Table 8 \\
+\hline
+
+3 & The ``optimized oracle export'' results are unexplained and implausible as reported. Table 8 shows an ``optimized oracle export'' RMSE of 0.000170. Define precisely how these 15-minute streams are produced, what is being optimized against what, and confirm there is no use of test-period targets. If this cannot be justified, remove it. & We agree this was confusing and potentially misleading. The ``optimized oracle export'' table has been completely removed from the revised manuscript. It referred to an internal intermediate processing step that was incorrectly reported as a forecasting result. All evaluation now uses only the standard model outputs with clearly documented metrics. & Former Table 8 removed; Section VI reorganized \\
+\hline
+
+4 & The blockchain layer is described but not evaluated. Either provide a concrete prototype evaluation (even on a local EVM testnet with measured gas/latency) or reframe the blockchain material as proposed architecture and temper the claims accordingly. & We have implemented and evaluated a complete three-contract Solidity prototype on a local Hardhat Ethereum node (Solidity 0.8.24). A 12-module testing suite (62 test cases, all passing) validates: gas economics (anchorForecast 249,222 gas), pipeline latency (2.47 ms), throughput (709 TPS), storage compression (2.24:1), block finality at multiple mining intervals, and PGS gating correctness. Transaction confirmation time corresponds to local Hardhat block confirmation under automine settings; production-network confirmation times were not evaluated and remain future work. & Section VII-G (new), Tables XII--XVII (new) \\
+\hline
+
+5 & The Predictive Green Score is not defined. The intro describes a 0--100 ``green score'' used as a smart-contract threshold; Section III uses a 7000/10000 on-chain integer threshold. How the confidence/green score is computed from the model output is never specified. Give the exact formula and show its calibration. & PGS now explicitly defined: $PGS_t = \text{round}(10000 \cdot \text{clip}(\hat{y}_t, 0, 1))$. Scheduling gate: $E_t = \mathbb{1}[\hat{y}_t \ge 0.15] = \mathbb{1}[PGS_t \ge 1500]$. This is a deterministic forecast-strength score, not a calibrated confidence score. Previous scale inconsistency removed. Calibrated uncertainty-aware PGS design listed as future work. & Section I, Section VII-B, Section IX \\
+\hline
+
+6 & Scheduling benefit is a property of the threshold, not of the model. Compare scheduling outcomes under LR vs the proposed model vs perfect-foresight, on the same gating rule. Without that comparison the 68.26\% figure does not isolate the value of your method. & New comparison: LR: 280 eligible hours, 25.81\% renewable share; Hybrid Residual: 280 hours, 25.81\% (identical); Perfect foresight: 290 hours, 25.74\%. The revised text explicitly states the operational gain is attributed to the thresholded selection rule, not to a forecast-quality advantage of the Hybrid Residual model over LR. & Section VII-C, Table IX \\
+\hline
+
+7 & Model naming is inconsistent throughout: ``residual decomposition-based model,'' ``Hybrid Error-Correction,'' ``Hybrid (LR+BiLSTM)'' (figure legends), and ``Proposed (residual).'' Pick one name and use it everywhere, including figures. & Standardized to ``Hybrid Residual'' throughout the entire manuscript---all tables, figure captions, running text, and axis labels. All previous variants unified. & Throughout entire manuscript \\
+\hline
+
+8 & Table inconsistencies to reconcile: the standalone BiLSTM appears as RMSE 0.0256 in Tables 6 and 9 but EA-BiLSTM v1 is 0.0210 in Tables 5/10---clarify whether these are the same model. Best validation loss precision discrepancy. Validation MAE not in table. & Reconciled: (1) Standalone BiLSTM (full-target) and EA-BiLSTM v1 (energy-aware) clearly labeled as distinct models. (2) Validation loss precision unified to 4 significant figures. (3) Validation MAE now appears consistently where referenced. & Tables V, VI, IX, X; Section V-B text \\
+\hline
+
+9 & The introduction describes the RNN as operating over ``minutes to hours'' and ``small sequences of hourly values (typically around 10--15 minutes),'' which is internally incoherent and contradicts the 48-hour lookback actually used. & Fixed. Introduction now correctly states 48-hour lookback window with hourly temporal resolution. All incorrect references to ``minutes'' removed. & Section I, Section IV-A \\
+\hline
+
+10 & The reported near-zero training residual mean (``approximately 0.000000'') is a mathematical property of OLS residuals, not an empirical finding; presenting it as evidence is not meaningful. & Agreed. The statement has been removed. We no longer present the zero-mean residual property as an empirical finding. & Former Section V text removed \\
+\hline
+
+11 & Heading typo: ``REASEARCH GAPS'' (Section II-F). Several capitalization issues persist throughout (lstm/LSTM, bilstm/BiLSTM, ``SEQUENCE MODELS,'' ``Attention,'' ``MODELS'' mid-sentence). & All spelling and capitalization issues corrected throughout, including the heading typo and consistent technical term usage. & Throughout manuscript \\
+\hline
+
+\end{longtable}
+
+\vspace{1em}
+
+%% ============================================================
+{\large \textbf{Reviewer \#2 Comments and Response:}}
+
+\vspace{0.5em}
+We sincerely thank the reviewer for the constructive comments and valuable suggestions. All comments have been carefully considered, and the manuscript has been revised accordingly. Detailed responses are provided below.
+
+\vspace{0.5em}
+
+\begin{longtable}{|p{1.5cm}|p{3.5cm}|p{6.2cm}|p{2.8cm}|}
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endhead
+
+1 & Please clarify the exact calculation of the Predictive Green Score, including how forecast confidence is converted to the 0--100 or 0--10000 scale used by the smart contract. & The PGS formula is now explicitly defined: $PGS_t = \text{round}(10000 \cdot \text{clip}(\hat{y}_t, 0, 1))$ with threshold at 1500 (corresponding to forecast $\ge$ 0.15). Previous scale inconsistency resolved. We clarify this is a deterministic forecast-strength score, not a calibrated confidence metric. & Section I, Section VII-B \\
+\hline
+
+2 & The proposed model and Linear Regression have almost identical global RMSE, MAE, and $R^2$ values. Please state more clearly that the contribution is mainly improved peak-period and nonlinear-region behavior, not large improvement in global metrics. & Revised manuscript clearly states that near-parity is expected given the strongly deterministic dataset structure. Contribution reframed as interpretability, failure-mode analysis, and deployable decomposition. Five-seed DM testing provides rigorous statistical evidence. & Abstract, Section VI-A, Section VIII-A, Conclusion \\
+\hline
+
+3 & Please reduce repeated explanations in Sections VI and VII. Some paragraphs about peak-period RMSE and scheduling importance are repeated and can be shortened. & Redundant explanations consolidated. Peak-period behavior merged into single subsection (Section VI-C). Scheduling interpretation appears once in Section VII-C without repetition. & Sections VI, VII (consolidated) \\
+\hline
+
+4 & Please provide more detail about the blockchain prototype, including whether gas cost, latency, and transaction confirmation time were measured or only discussed conceptually. & A 12-module testing suite (62 test cases) developed and executed. All gas costs, pipeline latency, block finality, throughput, and storage metrics are now empirically measured. Key results: 709 TPS, 2.47 ms latency, 2.24:1 compression. Transaction confirmation time corresponds to local Hardhat block confirmation under automine settings; production-network confirmation times were not evaluated and remain future work. & Section VII-G (new), Tables XII--XVII (new) \\
+\hline
+
+\end{longtable}
+
+\vspace{1em}
+
+%% ============================================================
+{\large \textbf{Reviewer \#3 Comments and Response:}}
+
+\vspace{0.5em}
+We sincerely thank the reviewer for the constructive comments and valuable suggestions. All comments have been carefully considered, and the manuscript has been revised accordingly. Detailed responses are provided below.
+
+\vspace{0.5em}
+
+\begin{longtable}{|p{1.5cm}|p{3.5cm}|p{6.2cm}|p{2.8cm}|}
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Comment No.} & \textbf{Reviewer Comment } & \textbf{Response} & \textbf{Location in Revised Manuscript} \\
+\hline
+\endhead
+
+1 & Please provide stronger evidence demonstrating the advantage of the proposed model over the Linear Regression baseline, as the reported performance differences are minimal. & We provide transparent evidence through five-seed evaluation and DM significance testing. The Hybrid Residual model achieves near-parity (mean DM $p$ = 0.20, not significant). Contribution honestly reframed as decomposed, auditable architecture. Multi-site evaluation across 10 Indian states confirms this; Gujarat (GJ) is the only state with consistent significant advantage ($p < 0.05$ across all 5 seeds). & Abstract, Section VI, Section VIII-H, Conclusion \\
+\hline
+
+2 & Include statistical significance analysis (e.g., Wilcoxon signed-rank test) to support the reported improvements. & Diebold--Mariano (DM) test conducted---the standard significance test for forecast comparison. Mean DM statistic = $-$0.39, $p$ = 0.20 (not significant at $\alpha$ = 0.05). Only 1/5 seeds achieves significance. DM chosen over Wilcoxon because it accounts for serial correlation in prediction errors. & Section VI-D, Table VIII \\
+\hline
+
+3 & Strengthen the blockchain contribution by providing quantitative evaluation and clearer justification of its necessity within the proposed framework. & Fully evaluated Solidity prototype with 12-module testing suite (62 tests, all passing). Quantitative: gas costs, 2.47 ms latency, 709 TPS, 2.24:1 compression, block finality at 1s/3s/5s intervals, 100\% hash integrity. Necessity justified via mechanism comparison table showing only our PGS-gated system provides all four capabilities. & Section VII-G, Tables XII--XVII, Table XI \\
+\hline
+
+4 & Compare the proposed method with recent state-of-the-art forecasting models to better establish its competitiveness. & Comparison with 7 models: LR, Random Forest, LSTM, GRU, BiLSTM, XGBoost, and 3 EA-BiLSTM variants. Multi-site evaluation across 10 states. The Hybrid Residual model outperforms all standalone deep-learning models (RMSE 0.007187 vs.\ LSTM 0.015304, BiLSTM 0.021148). Key insight: residual decomposition outperforms end-to-end deep learning on structured datasets. & Section V-D, Table V, Section VIII-H \\
+\hline
+
+5 & Revise the manuscript for clarity, conciseness, and language quality, as several sections contain repetition and overly detailed explanations. & Manuscript significantly revised: redundant paragraphs removed, technical language standardized, model naming unified to ``Hybrid Residual'' throughout. & Throughout manuscript \\
+\hline
+
+\end{longtable}
+
+\vspace{1.5em}
+
+%% ============================================================
+{\large \textbf{Additional Improvements Beyond Reviewer Suggestions}}
+
+\vspace{0.5em}
+In addition to addressing all reviewer comments, the following improvements were made:
+
+\vspace{0.5em}
+
+\begin{longtable}{|p{0.5cm}|p{3.5cm}|p{7.5cm}|p{2.5cm}|}
+\hline
+\textbf{No.} & \textbf{Improvement} & \textbf{Description} & \textbf{Location} \\
+\hline
+\endfirsthead
+\hline
+\textbf{No.} & \textbf{Improvement} & \textbf{Description} & \textbf{Location} \\
+\hline
+\endhead
+
+1 & Multi-Site Generalizability & Pipeline applied to 9 additional Indian states with 5-seed DM testing. Across 10 states, Hybrid Residual achieves comparable performance to LR (mean RMSE: 0.008626 vs.\ 0.007787). & Section VIII-H, Table XIX \\
+\hline
+
+2 & Comprehensive Blockchain Testing Suite & 12-module, 62-test-case automated suite covering hash integrity, chain linkage, PGS gating, gas economics, latency, throughput, storage, block finality, and SAST security. All tests pass. & Section VII-G, Tables XII--XVII \\
+\hline
+
+3 & Root-Cause Analysis of BiLSTM Failure & Formal diagnosis of why 3 standalone BiLSTM architectures failed to outperform LR, with 4 mechanistic hypotheses and confidence assessments. & Section VIII-B, Table XX \\
+\hline
+
+4 & 12 New IEEE References & Added 12 references from IEEE Access, IEEE Trans.\ Smart Grid, and IEEE Trans.\ Syst.\ Man Cybern., covering attention-BiLSTM, blockchain energy trading, IPFS, residual learning, and DL surveys. & References \\
+\hline
+
+5 & Naming Standardization & All model references unified to ``Hybrid Residual'' across tables, figures, text, and captions. & Throughout \\
+\hline
+
+6 & Blockchain Scope Clarification & Explicit statements added that confirmation times are local Hardhat automine; production-network evaluation remains future work. & Section VII-G \\
+\hline
+
+7 & Abstract Rewrite & Rewritten to reflect near-parity with LR, remove misleading claims, and include blockchain evaluation metrics. & Abstract \\
+\hline
+
+\end{longtable}
+
+\end{document}
+
+

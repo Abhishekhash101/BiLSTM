@@ -1,0 +1,7 @@
+.code/
+.codex/
+.kiro/
+raw_data/
+raw_data.zip
+.env
+node_modules
