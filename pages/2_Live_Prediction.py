@@ -3,7 +3,7 @@ pages/2_Live_Prediction.py
 ---------------------------
 Interactive forecast chart with animated reveal for the selected state.
 
-The user selects a state and hour range, clicks "Run Prediction", and watches
+The user selects a state and hour range, clicks "Predict Energy", and watches
 three series (Actual, LR Prediction, Hybrid Prediction) animate onto the chart
 from left to right over ~3 seconds.  After the animation completes, the RMSE
 improvement metric is displayed.
@@ -45,7 +45,7 @@ with col_hours:
 # ---------------------------------------------------------------------------
 # Run button
 # ---------------------------------------------------------------------------
-run_clicked = st.button("Run Prediction")
+run_clicked = st.button("Predict Energy")
 
 # ---------------------------------------------------------------------------
 # Animation and metric display

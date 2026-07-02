@@ -3,18 +3,21 @@ pages/4_Error_Analysis.py
 --------------------------
 Error Analysis page for the BiLSTM Demo Dashboard.
 
-Displays residual correction charts, residual distribution histograms,
-MAE metrics, and static figures for before/after comparison and ablation study.
+Displays interactive before/after correction charts, residual correction charts,
+residual distribution histograms, MAE metrics, and ablation study comparisons.
 
-Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7
+Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8
 """
-
-import os
 
 import numpy as np
 import streamlit as st
 
-from utils.chart_helpers import build_residual_chart, build_residual_histogram
+from utils.chart_helpers import (
+    build_before_after_chart,
+    build_ablation_bar,
+    build_residual_chart,
+    build_residual_histogram,
+)
 from utils.data_loader import compute_mae_reduction
 from utils.demo_data_generator import get_state, STATES
 
@@ -37,24 +40,14 @@ state = st.selectbox("Select State", STATES, index=0)
 state_data = get_state(state, st.session_state["synth_cache"])
 
 # ---------------------------------------------------------------------------
-# 3. Static figures side by side with os.path.exists guards
+# 3. Before/After correction chart (interactive)
 # ---------------------------------------------------------------------------
 
-col_left, col_right = st.columns(2)
-
-with col_left:
-    if os.path.exists("figures/before_after_comparison.png"):
-        st.image(
-            "figures/before_after_comparison.png",
-            caption="Before/After Correction",
-        )
-
-with col_right:
-    if os.path.exists("figures/error_distribution.png"):
-        st.image(
-            "figures/error_distribution.png",
-            caption="Error Distribution",
-        )
+try:
+    before_after_fig = build_before_after_chart(state_data, n_steps=168)
+    st.plotly_chart(before_after_fig, use_container_width=True)
+except Exception:
+    st.warning("Before/after comparison chart cannot be rendered — data unavailable.")
 
 # ---------------------------------------------------------------------------
 # 4. Residual correction chart (48 timesteps)
@@ -93,8 +86,15 @@ with col3:
     st.metric("MAE Reduction %", f"{mae_reduction:.2f}%")
 
 # ---------------------------------------------------------------------------
-# 7. Ablation figure
+# 7. Ablation study chart (interactive)
 # ---------------------------------------------------------------------------
 
-if os.path.exists("figures/ablation_comparison.png"):
-    st.image("figures/ablation_comparison.png", caption="Ablation Study")
+try:
+    metrics_df = st.session_state.get("metrics_df")
+    if metrics_df is not None:
+        ablation_fig = build_ablation_bar(metrics_df)
+        st.plotly_chart(ablation_fig, use_container_width=True)
+    else:
+        st.warning("Ablation comparison chart cannot be rendered — metrics data unavailable.")
+except Exception:
+    st.warning("Ablation comparison chart cannot be rendered — data unavailable.")

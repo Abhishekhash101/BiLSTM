@@ -7,6 +7,7 @@ consistent dark-theme styling.
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # ---------------------------------------------------------------------------
 # Module-level colour constants
@@ -382,5 +383,151 @@ def build_residual_histogram(lr_residuals, hyb_residuals) -> go.Figure:
         barmode="overlay",
         xaxis=dict(range=[min_all, max_all]),
     )
+
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Ablation study bar chart builder
+# ---------------------------------------------------------------------------
+
+def build_ablation_bar(metrics_df: pd.DataFrame) -> go.Figure:
+    """Grouped bar chart comparing RMSE across three model variants for ablation study.
+
+    Plots LR Only, Random Forest, and Hybrid BiLSTM RMSE values per state
+    without any highlight logic — each trace uses a fixed colour.
+
+    Args:
+        metrics_df: DataFrame containing columns ``state``, ``lr_rmse``,
+                    ``rf_rmse``, and ``hyb_rmse_mean``.
+
+    Returns:
+        A ``go.Figure`` with exactly three ``go.Bar`` traces and grouped bar mode.
+    """
+    states = metrics_df["state"].tolist()
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        name="LR Only",
+        x=states,
+        y=metrics_df["lr_rmse"].tolist(),
+        marker_color=COLOR_LR,
+        hovertemplate="%{y:.6f}",
+    ))
+
+    fig.add_trace(go.Bar(
+        name="Random Forest",
+        x=states,
+        y=metrics_df["rf_rmse"].tolist(),
+        marker_color="#FFA94D",
+        hovertemplate="%{y:.6f}",
+    ))
+
+    fig.add_trace(go.Bar(
+        name="Hybrid BiLSTM",
+        x=states,
+        y=metrics_df["hyb_rmse_mean"].tolist(),
+        marker_color=COLOR_HYBRID,
+        hovertemplate="%{y:.6f}",
+    ))
+
+    apply_dark_layout(
+        fig,
+        "Ablation Study \u2014 RMSE by Model Variant",
+        "State",
+        "RMSE",
+    )
+    fig.update_layout(barmode="group")
+
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Before/After comparison chart builder
+# ---------------------------------------------------------------------------
+
+def build_before_after_chart(state_data: dict, n_steps: int = 168) -> go.Figure:
+    """Build a two-panel subplot comparing predictions before and after hybrid correction.
+
+    Panel 1 ("Before") plots Actual vs LR Prediction.
+    Panel 2 ("After") plots Actual vs Hybrid Prediction.
+    All traces use six-decimal hover tooltips.
+
+    Args:
+        state_data: Dict with keys ``actual``, ``lr_pred``, ``hyb_pred``, each a
+                    1-D ``np.ndarray`` of shape ``(168,)``.
+        n_steps:    Number of timesteps to display (default 168).
+
+    Returns:
+        A ``go.Figure`` with two subplot panels and four ``go.Scatter`` traces.
+    """
+    t = np.arange(n_steps)
+    actual = state_data["actual"][:n_steps]
+    lr_pred = state_data["lr_pred"][:n_steps]
+    hyb_pred = state_data["hyb_pred"][:n_steps]
+
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Before (LR Only)", "After (Hybrid Correction)"),
+    )
+
+    # Panel 1 — Before: Actual vs LR Prediction
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=actual,
+            mode="lines",
+            name="Actual",
+            line=dict(color=COLOR_ACTUAL),
+            hovertemplate="%{y:.6f}",
+        ),
+        row=1,
+        col=1,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=lr_pred,
+            mode="lines",
+            name="LR Prediction",
+            line=dict(color=COLOR_LR),
+            hovertemplate="%{y:.6f}",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Panel 2 — After: Actual vs Hybrid Prediction
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=actual,
+            mode="lines",
+            name="Actual",
+            line=dict(color=COLOR_ACTUAL),
+            showlegend=False,
+            hovertemplate="%{y:.6f}",
+        ),
+        row=1,
+        col=2,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=t,
+            y=hyb_pred,
+            mode="lines",
+            name="Hybrid Prediction",
+            line=dict(color=COLOR_HYBRID),
+            hovertemplate="%{y:.6f}",
+        ),
+        row=1,
+        col=2,
+    )
+
+    apply_dark_layout(fig, "Before vs After Hybrid Correction", "Hour", "Capacity Factor")
 
     return fig

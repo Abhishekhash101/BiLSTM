@@ -7,17 +7,18 @@ Displays:
 1. Project title and summary paragraph
 2. Three metric cards (Best RMSE, Best R², States Covered)
 3. Pipeline diagram (5-node Plotly scatter with edge traces)
-4. Prediction vs Actual figure (guarded by os.path.exists)
+4. Interactive Prediction vs Actual chart (Plotly line chart from synth_cache)
 
-Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
+Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
 """
 
-import os
-
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
+from utils.chart_helpers import build_line_chart
 from utils.data_loader import compute_metric_cards
+from utils.demo_data_generator import STATES
 
 # ---------------------------------------------------------------------------
 # 1. Title and summary
@@ -118,9 +119,14 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------------------------------------------------------
-# 4. Result figure (guarded)
+# 4. Interactive Prediction vs Actual chart
 # ---------------------------------------------------------------------------
 
-figure_path = "figures/prediction_vs_actual.png"
-if os.path.exists(figure_path):
-    st.image(figure_path, caption="Stage 4: Prediction vs Actual")
+synth_cache = st.session_state.get("synth_cache")
+if synth_cache is not None:
+    state_data = synth_cache["TN"]
+    t = np.arange(len(state_data["actual"]))
+    fig_pred = build_line_chart(t, state_data["actual"], state_data["lr_pred"], state_data["hyb_pred"], "Prediction vs Actual — TN")
+    st.plotly_chart(fig_pred, use_container_width=True)
+else:
+    st.warning("Synthetic data unavailable — chart cannot be rendered.")

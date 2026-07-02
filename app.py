@@ -65,15 +65,43 @@ if "synth_cache" not in st.session_state:
 # 5. Welcome / landing content
 # ---------------------------------------------------------------------------
 st.title("⚡ BiLSTM Energy Forecasting Dashboard")
+
+st.subheader("Problem Statement")
 st.markdown(
     """
-    Welcome to the **BiLSTM Hybrid Energy Forecasting** demo dashboard.
+    India's rapid expansion of renewable energy capacity—particularly solar and wind
+    installations across states like **Tamil Nadu** and **Rajasthan**—introduces
+    significant variability into the power grid. Unlike conventional thermal plants,
+    solar irradiance and wind speed fluctuate on sub-hourly timescales, creating
+    grid stability challenges for system operators. Accurate **short-term forecasts**
+    (1–48 hours ahead) are essential to balance supply and demand, schedule storage
+    dispatch, and minimize costly curtailment of clean generation.
+    """
+)
 
+st.subheader("Solution Approach")
+st.markdown(
+    """
+    This project implements a hybrid error-correction pipeline:
+
+    1. **Linear Regression Baseline** — A simple linear model provides fast,
+       interpretable predictions of hourly generation.
+    2. **Residual Computation** — The difference between actual generation and the
+       baseline prediction is computed as the residual signal.
+    3. **BiLSTM Residual Correction** — A Bidirectional LSTM network learns temporal
+       patterns in the residual sequence and produces a correction term that is added
+       back to the baseline, yielding more accurate hybrid forecasts.
+    """
+)
+
+st.markdown(
+    """
     Use the **sidebar** to navigate between pages:
     - **Home** — Project overview, pipeline diagram, and key metrics
     - **Live Prediction** — Interactive animated forecast chart
     - **Model Comparison** — Multi-state RMSE and R² visualizations
     - **Error Analysis** — Residual correction deep-dive
     - **Blockchain** — Simulated on-chain prediction storage
+    - **Dataset** — Data source documentation and scope
     """
 )
